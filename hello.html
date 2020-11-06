@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hello word</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.6/xlsx.full.min.js" integrity="sha512-y/6xOMDHnSz1X2azryTilOlwPm/yWBDI9zY87kTAHiaDAl+32nW2kT+1M8TtHDikgVaO0a/XcEujCW8lm2z+Dg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js" integrity="sha512-k8F8QynmFNURwbUJC8drKA+fo3YfNvjqKzStdydD6au+MzvxBoRnxH8E31RJXwDY9DrnEiPhh9wBoDSIxhkyHQ==" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card" style="width: 18rem; margin: 5rem auto">
+            <img src="https://i.pinimg.com/564x/64/41/03/644103139427e961689083febf794161.jpg" class="card-img-top" alt="cat">
+            <div class="card-body">
+                <h5 class="card-title">Card title</h5>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                <a href="#" id="button" class="btn btn-primary">Download Excel</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //-------------------------------- [ Data ] ---------------------------------//    
+        let report = {
+            title: "優橋_俏樂斯月報-20200710-20200731",
+            subTitle: "report",
+            author: "popIn"
+        };
+
+        let data_obj = [{
+            總覽: '2020/08/26',
+            合計Imp: 5057060,
+            合計Click: 333,
+            合計CTR: '0.07%',
+            合計金額: 166500,
+            合計MCV: 11,
+            合計CV: 1,
+            合計MCVR: '3.30%',
+            合計CVR: '0.03%'
+        }, {
+            總覽: '2020/08/27',
+            合計Imp: 713854,
+            合計Click: 752,
+            合計CTR: '0.11%',
+            合計金額: 376000,
+            合計MCV: 199,
+            合計CV: 0,
+            合計MCVR: '26.46%',
+            合計CVR: '0.00%'
+        }];
+
+        //-------------------------------- [ Sheet js function init ] ---------------------------------// 
+
+        let wb = XLSX.utils.book_new();
+        wb.Props = {
+            Title: report.title,
+            Subject: report.subTitle,
+            Author: report.author,
+            CreatedDate: new Date()
+        };
+
+        wb.SheetNames.push("報表總覽");
+        let ws_data = data_obj;
+        let ws_header = {
+            header: ["總覽", "合計Imp", "合計Click", "合計CTR", "合計金額", "合計MCV", "合計CV", "合計MCVR", "合計CVR"],
+            skipHeader: false
+        };
+        let ws = XLSX.utils.json_to_sheet(ws_data, ws_header);
+        ws['A2']
+        wb.Sheets["報表總覽"] = ws;
+        let wopts = {
+            bookType: 'xlsx',
+            bookSST: false,
+            type: 'binary'
+        };
+        let wbout = XLSX.write(wb, wopts);
+
+        let s2ab = (s) => {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        console.log(new Blob([s2ab(wbout)]));
+        document.querySelector('#button').addEventListener("click", function() {
+            saveAs(new Blob([s2ab(wbout)], {
+                type: "application/octet-stream"
+            }), report.title + '.xlsx');
+        })
+    </script>
+
+</body>
+
+</html>

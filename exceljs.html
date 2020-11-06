@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>exceiljs-ver1</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.1.1/exceljs.min.js" integrity="sha512-zhDD6mpjQmjTOqcC2jd9iRgxmAlk/pmCCUPjKA9XWbcmvk7o0Jr8/9Dr0qQ5V54DPQJcRgCvlgFrtWMxgRjSOQ==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js" integrity="sha512-k8F8QynmFNURwbUJC8drKA+fo3YfNvjqKzStdydD6au+MzvxBoRnxH8E31RJXwDY9DrnEiPhh9wBoDSIxhkyHQ==" crossorigin="anonymous"></script>
+    <script src='../data.js'></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card" style="width: 18rem; margin: 5rem auto">
+            <img src="https://i.pinimg.com/564x/64/41/03/644103139427e961689083febf794161.jpg" class="card-img-top" alt="cat">
+            <div class="card-body">
+                <h5 class="card-title">Card title</h5>
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                <input type="file" id="file-uploader" data-target="file-uploader" accept="image/*" multiple="multiple" />
+                </br>
+                </br>
+                <a href="#" id="button" class="btn btn-primary">Download Excel</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //-------------------------------- [ Data ] ---------------------------------//    
+        let report = {
+            title: "優橋_俏樂斯月報-20200710-20200731",
+            subTitle: "report",
+            author: "popIn"
+        };
+
+        let dataLength = data_obj.length; // data obj length
+        let lastRowNum = dataLength + 5;
+
+        //---------- [math function] -----------//
+        let sum = (key) => {
+            let result = 0;
+            data_obj.forEach((item, i) => {
+                result += item[key];
+            });
+            return result;
+        };
+
+        let average = (key) => {
+            let result = 0;
+            data_obj.forEach((item, i) => {
+                result += item[key];
+            });
+            return result;
+        };
+
+        //-------------------------------- [ Excel js function init ] ---------------------------------// 
+
+        //create a workbook
+        var workbook = new ExcelJS.Workbook();
+
+        workbook.title = '優橋_俏樂斯月報-20200710-20200731';
+        workbook.creator = 'popIn';
+        workbook.modified = new Date();
+        workbook.views = [{
+            x: 0,
+            y: 0,
+            width: 10000,
+            height: 20000,
+            firstSheet: 0,
+            activeTab: 1,
+            visibility: 'visible'
+        }];
+
+        const worksheet = workbook.addWorksheet('報表總覽', {
+            properties: {
+                tabColor: {
+                    argb: 'FF0000' // 工作表欄位顏色
+                }
+            },
+            views: [{
+                showGridLines: false,
+                state: 'frozen', // 凍結表格
+                xSplit: 2,
+                ySplit: 5
+            }],
+            headerFooter: {
+                firstHeader: "Hello Exceljs"
+            }
+        });
+
+        // merge a range of cell
+        worksheet.mergeCells('B4:B5');
+
+
+        //-----------------------  [ set columns ] -----------------------//
+        let FormatArray = [
+            ['總覽', '總覽', 'yyyy/m/d', '合計'],
+            ['合計Imp', '總曝光', '#,##0', sum('合計Imp')],
+            ['合計Click', '點擊數', '#,##0', sum('合計Click')],
+            ['合計CTR', '點擊率', '0.00%', (sum('合計Click') / sum('合計Imp'))],
+            ['合計金額', '總費用', '$#,##0.00_);($#,##0.00)', sum('合計金額')],
+            ['合計MCV', '(轉換數)', '#,##0', sum('合計MCV')],
+            ['合計CV', '(轉換數)', '#,##0', sum('合計CV')],
+            ['合計MCVR', '(轉換率)', '0.00%', (sum('合計MCV') / sum('合計Click'))],
+            ['合計CVR', '(轉換率)', '0.00%', (sum('合計CV') / sum('合計Click'))],
+            ['PCImp', '電腦裝置總曝光', '#,##0', sum('PCImp')],
+            ['PCClick', '電腦裝置點擊數', '#,##0', sum('PCClick')],
+            ['PCCTR', '電腦裝置點擊率', '0.00%', (sum('PCClick') / sum('PCImp'))],
+            ['PCMCV', '電腦裝置轉換數', '#,##0', sum('PCMCV')],
+            ['PCCV', '電腦裝置轉換數', '#,##0', sum('PCCV')],
+            ['PCMCVR', '電腦裝置轉換率', '0.00%', (sum('PCMCV') / sum('PCClick'))],
+            ['PCCVR', '電腦裝置轉換率', '0.00%', (sum('PCCV') / sum('PCClick'))],
+            ['MobileImp', '行動裝置總曝光', '#,##0', sum('MobileImp')],
+            ['MobileClick', '行動裝置點擊數', '#,##0', sum('MobileClick')],
+            ['MobileCTR', '行動裝置點擊率', '0.00%', (sum('MobileClick') / sum('MobileImp'))],
+            ['MobileMCV', '行動裝置轉換數', '#,##0', sum('MobileMCV')],
+            ['MobileCV', '行動裝置轉換數', '#,##0', sum('MobileCV')],
+            ['MobileMCVR', '行動裝置轉換率', '0.00%', (sum('MobileMCV') / sum('MobileClick'))],
+            ['MobileCVR', '行動裝置轉換率', '0.00%', (sum('MobileCV') / sum('MobileClick'))]
+        ];
+
+        let setColumnsKey = [{}];
+        FormatArray.forEach((col, i) => {
+            let obj = {};
+            obj.header = '';
+            obj.key = col[0];
+            obj.width = 20;
+            setColumnsKey.push(obj);
+        });
+        worksheet.columns = setColumnsKey;
+
+        FormatArray.forEach((col, i) => {
+            let col_key = worksheet.getColumn(i + 2)._key;
+            //console.log(col_key);
+            let setColumnsValue = ['', '', '']; // 空三格
+            setColumnsValue.push(col[0]);
+            setColumnsValue.push(col[1]);
+            worksheet.getColumn(i + 2).values = setColumnsValue;
+            worksheet.getColumn(i + 2).numFmt = col[2]; // Set column Format
+            worksheet.getColumn(i + 2).alignment = { // 欄位置中
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            worksheet.getColumn(i + 2).font = { // 字型
+                name: '微軟正黑體',
+                size: 12
+            };
+        });
+
+
+        //設定背景顏色
+        let content1Range = 'B6:J' + (dataLength + 5),
+            total1Range = 'B' + (dataLength + 6) + ':J' + (dataLength + 6),
+            content2Range = 'K6:Q' + (dataLength + 5),
+            total2Range = 'K' + (dataLength + 6) + ':Q' + (dataLength + 6),
+            content3Range = 'R6:X' + (dataLength + 5),
+            total3Range = 'R' + (dataLength + 6) + ':X' + (dataLength + 6);
+
+
+        let contentBg = [{
+            ref: 'B4:J5',
+            argb: '00C8C8C8' // content1-標題區
+        }, {
+            ref: content1Range,
+            argb: '00F2F2F2' // content1-資料區
+        }, {
+            ref: total1Range,
+            argb: '00C8C8C8' // content1-加總區
+        }, {
+            ref: 'K4:Q5',
+            argb: '008DB3E2' // content2-標題區
+        }, {
+            ref: content2Range,
+            argb: '00DBE5F1' // content2-資料區
+        }, {
+            ref: total2Range,
+            argb: '008DB3E2' // content2-加總區
+        }, {
+            ref: 'R4:X5',
+            argb: '00E5B8B7' // content3-標題區
+        }, {
+            ref: content3Range,
+            argb: '00FDE9D9' // content3-資料區
+        }, {
+            ref: total3Range,
+            argb: '00E5B8B7' // content3-加總區
+        }];
+
+        contentBg.forEach((zoom, i) => {
+            worksheet.addConditionalFormatting({ //背景顏色
+                ref: zoom.ref,
+                rules: [{
+                    type: 'expression',
+                    formulae: ['true'],
+                    style: {
+                        fill: {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            bgColor: {
+                                argb: zoom.argb
+                            }
+                        }
+                    },
+                }]
+            });
+        });
+
+        //-----------------------  [ set rows ] -----------------------//
+        data_obj.forEach((row, i) => {
+            worksheet.addRow(row);
+        });
+
+        worksheet.mergeCells('A2:X2');
+        worksheet.getCell('B2').value = report.title;
+        worksheet.getCell('B2').font = { // 字型
+            name: '微軟正黑體',
+            size: 20,
+            bold: true
+        };
+
+        let lastRowV = [''];
+        FormatArray.forEach((row, i) => {
+            lastRowV.push(row[3]);
+        })
+        worksheet.addRow(lastRowV);
+
+        worksheet.eachRow(function(row, rowNumber) {
+            row.eachCell(function(cell, colNumber) {
+                if (rowNumber >= 4 && cell.value !== '') {
+                    cell.border = {
+                        top: {
+                            style: 'thin',
+                            color: {
+                                argb: 'FF000000'
+                            }
+                        },
+                        left: {
+                            style: 'thin',
+                            color: {
+                                argb: 'FF000000'
+                            }
+                        },
+                        bottom: {
+                            style: 'thin',
+                            color: {
+                                argb: 'FF000000'
+                            }
+                        },
+                        right: {
+                            style: 'thin',
+                            color: {
+                                argb: 'FF000000'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // ---------- [ upload image ] ---------- //
+        const fileUploader = document.querySelector('#file-uploader');
+
+        fileUploader.addEventListener('change', (e) => {
+            console.log(e.target.files);
+        });
+
+
+        let s2ab = (s) => {
+            let buf = new ArrayBuffer(s.length);
+            let view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
+
+        document.querySelector('#button').addEventListener("click", () => {
+            var buff = workbook.xlsx.writeBuffer().then((data) => {
+                var blob = new Blob([data], {
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                });
+                saveAs(blob, workbook.title + ".xlsx");
+            });
+        });
+    </script>
+
+</body>
+
+</html>
